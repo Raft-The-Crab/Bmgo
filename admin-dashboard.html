@@ -379,11 +379,14 @@
                 document.getElementById('totalGcubes').textContent = 
                     (data.totalGcubes || 0).toLocaleString();
                 document.getElementById('topPlayer').textContent = data.topPlayer?.username || 'N/A';
+                document.getElementById('serverStatus').textContent = '✓ ONLINE';
                 document.getElementById('lastUpdate').textContent = new Date().toLocaleTimeString();
 
                 showAlert('Stats refreshed successfully!', 'success');
+                return true;
             } catch (error) {
                 showAlert('Error fetching stats: ' + error.message, 'error');
+                return false;
             }
         }
 
