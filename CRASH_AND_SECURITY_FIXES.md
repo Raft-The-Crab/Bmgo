@@ -13,6 +13,9 @@ Status: In progress — key hardening changes applied to improve crash visibilit
   - Wrapped `Runnable.run()` and `Callable.call()` in `Throwable` handlers.
   - On throwable: logs (`Log.e`), `printStackTrace()`, calls `NormalListener.onError(...)` if throwable is an `Exception`, and forwards to `Thread.getDefaultUncaughtExceptionHandler().uncaughtException(...)` (so the crash is recorded by system/3rd-party crash reporters when severe).
   - Increased method locals to accommodate added registers.
+- HandlerGuard (new)
+  - Background Runnable that monitors `Thread.getDefaultUncaughtExceptionHandler()` every 10s and re-wraps it with our `BaseApplication$1` handler when replaced by third-party libraries.
+  - Ensures our handler remains installed and that crashes are forwarded and persisted even if libraries set their own handlers.
 - NormalListener
   - `onFailed(Throwable)` now logs the throwable immediately (so errors reported through the listener are visible in logcat).
 
@@ -50,3 +53,5 @@ Notes:
 - I removed committed secrets from `backend/.env` and replaced with placeholders — rotate any exposed secrets immediately and store them in your CI/hosting secret manager.
 
 Choose A, B, C, or D and I'll proceed.
+
+Note: I created a branch `feature/security-hardening` locally with these changes but couldn't push because there's no configured remote in this workspace. If you want I can prepare a patch file or you can add a remote and I will push and open a PR.
