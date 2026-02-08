@@ -10,7 +10,9 @@
     "start": "node server-enhanced.js",
     "dev": "nodemon server-enhanced.js",
     "test": "echo \"No tests configured yet\"",
-    "lint": "eslint ."
+    "find-handlers": "node tools/find_exception_handlers.js",
+    "lint": "eslint .",
+    "scan-secrets": "bash scripts/scan-secrets.sh"
   },
   "dependencies": {
     "express": "^4.18.2",
@@ -23,7 +25,9 @@
     "cloudinary": "^1.41.0",
     "express-rate-limit": "^7.1.0",
     "helmet": "^7.1.0",
-    "compression": "^1.7.4"
+    "compression": "^1.7.4",
+    "express-validator": "^6.15.0",
+    "@sentry/node": "^8.20.0"
   },
   "devDependencies": {
     "nodemon": "^3.0.1",

@@ -550,6 +550,116 @@ const BlockmanGoSDK = (() => {
         }, 10000);
     };
 
+    // --- Crash reporting helpers (client-side) ---
+    const CRASH_ENDPOINT = 'https://bmgo-service.onrender.com/api/internal/crash-report';
+    const PENDING_KEY = 'bg_pending_crashes';
+
+    const _getPending = () => {
+        try {
+            const raw = localStorage.getItem(PENDING_KEY);
+            return raw ? JSON.parse(raw) : [];
+        } catch (e) {
+            console.error('Failed to read pending crashes:', e);
+            return [];
+        }
+    };
+
+    const _setPending = (arr) => {
+        try {
+            localStorage.setItem(PENDING_KEY, JSON.stringify(arr));
+        } catch (e) {
+            console.error('Failed to persist pending crashes:', e);
+        }
+    };
+
+    const attemptUpload = async (report, retries = 3) => {
+        try {
+            if (!report || !report.stackTrace || typeof report.stackTrace !== 'string') {
+                throw new Error('Invalid crash report');
+            }
+
+            const payload = {
+                appVersion: report.appVersion || navigator.userAgent || 'web',
+                userId: report.userId || null,
+                deviceInfo: report.deviceInfo || { ua: navigator.userAgent },
+                stackTrace: report.stackTrace.slice(0, 20000),
+                meta: report.meta || {}
+            };
+
+            const controller = new AbortController();
+            const timeout = setTimeout(() => controller.abort(), 10000);
+
+            const res = await fetch(CRASH_ENDPOINT, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload),
+                signal: controller.signal
+            });
+
+            clearTimeout(timeout);
+
+            if (!res.ok) {
+                const text = await res.text();
+                throw new Error(`Upload failed: ${res.status} ${text}`);
+            }
+
+            return true;
+        } catch (err) {
+            if (retries > 0) {
+                console.warn('Retry upload in 3s, attempts left:', retries, err.message);
+                await new Promise(r => setTimeout(r, 3000));
+                return attemptUpload(report, retries - 1);
+            }
+            console.error('Crash upload failed:', err.message);
+            return false;
+        }
+    };
+
+    const sendPendingCrashes = async () => {
+        const pending = _getPending();
+        if (!pending.length) return;
+        const remaining = [];
+        for (const r of pending) {
+            const ok = await attemptUpload(r);
+            if (!ok) remaining.push(r);
+        }
+        _setPending(remaining);
+    };
+
+    const reportCrash = async (report) => {
+        try {
+            const pending = _getPending();
+            pending.push(report);
+            _setPending(pending);
+            // Try immediate upload in background
+            sendPendingCrashes();
+        } catch (e) {
+            console.error('Failed to report crash:', e);
+        }
+    };
+
+    // Global JS error handlers (capture unhandled errors/rejections)
+    try {
+        window.addEventListener('error', (ev) => {
+            try {
+                const stack = ev.error ? (ev.error.stack || ev.error.toString()) : `${ev.message} @ ${ev.filename}:${ev.lineno}:${ev.colno}`;
+                reportCrash({ stackTrace: stack, meta: { type: 'js_error' } });
+            } catch (e) { console.error('Error reporting JS error:', e); }
+        });
+
+        window.addEventListener('unhandledrejection', (ev) => {
+            try {
+                const stack = ev.reason ? (ev.reason.stack || ev.reason.toString()) : String(ev.reason);
+                reportCrash({ stackTrace: stack, meta: { type: 'unhandled_promise_rejection' } });
+            } catch (e) { console.error('Error reporting rejection:', e); }
+        });
+
+        // Try sending any pending reports after startup
+        setTimeout(() => { sendPendingCrashes(); }, 5000);
+    } catch (e) {
+        console.warn('Crash handlers unavailable in this environment:', e.message);
+    }
+
     // 导出公共 API
     return {
         BMGLogin,
