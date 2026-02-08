@@ -1311,6 +1311,15 @@
     invoke-virtual {v3, v4}, Ljava/lang/Thread;->setDaemon(Z)V
     invoke-virtual {v3}, Ljava/lang/Thread;->start()V
 
+    # Start a background task to upload persisted native crash traces to the crash ingestion endpoint
+    new-instance v2, Lcom/sandboxol/common/base/app/NativeCrashUploader;
+    invoke-direct {v2, p0}, Lcom/sandboxol/common/base/app/NativeCrashUploader;-><init>(Lcom/sandboxol/common/base/app/BaseApplication;)V
+    new-instance v3, Ljava/lang/Thread;
+    invoke-direct {v3, v2}, Ljava/lang/Thread;-><init>(Ljava/lang/Runnable;)V
+    const/4 v4, 0x1
+    invoke-virtual {v3, v4}, Ljava/lang/Thread;->setDaemon(Z)V
+    invoke-virtual {v3}, Ljava/lang/Thread;->start()V
+
     :end_label
     return-void
 .end method

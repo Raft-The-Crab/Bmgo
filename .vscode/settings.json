@@ -1,0 +1,30 @@
+{
+    "java.jdt.ls.vmargs": "-XX:+UseParallelGC -XX:GCTimeRatio=4 -XX:AdaptiveSizePolicyWeight=90 -Dsun.zip.disableMemoryMapping=true -Xmx8G -Xms100m -Xlog:disable",
+    "Lua.diagnostics.globals": [
+        "Lang",
+        "UI",
+        "World",
+        "CEGUIImageManager",
+        "L",
+        "imgMgr",
+        "UIManager",
+        "cdTimer"
+    ],
+    "Lua.workspace.ignoreDir": [
+        "smali",
+        "smali_*",
+        "smali_classes*",
+        "smali_assets",
+        "lib",
+        "build",
+        "original",
+        "assets/**/lua",
+        "assets/**/resourcesv2"
+    ],
+    "files.exclude": {
+        "**/smali/**": true,
+        "**/lib/**": true,
+        "**/build/**": true,
+        "**/original/**": true
+    }
+}
