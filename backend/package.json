@@ -1,0 +1,46 @@
+{
+  "name": "blockman-go-community-backend",
+  "version": "2.0.0",
+  "description": "Production-ready community backend for Blockman Go - Enhanced with earning systems",
+  "main": "server-enhanced.js",
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "scripts": {
+    "start": "node server-enhanced.js",
+    "dev": "nodemon server-enhanced.js",
+    "test": "echo \"No tests configured yet\"",
+    "lint": "eslint ."
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "mongoose": "^7.5.0",
+    "dotenv": "^16.3.1",
+    "cors": "^2.8.5",
+    "body-parser": "^1.20.2",
+    "axios": "^1.5.0",
+    "multer": "^1.4.5-lts.1",
+    "cloudinary": "^1.41.0",
+    "express-rate-limit": "^7.1.0",
+    "helmet": "^7.1.0",
+    "compression": "^1.7.4"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1",
+    "eslint": "^8.51.0"
+  },
+  "keywords": [
+    "blockman",
+    "gaming",
+    "backend",
+    "api",
+    "community"
+  ],
+  "author": "Blockman GO Community",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Raft-The-Crab/bmgo-service.git"
+  }
+}
+
