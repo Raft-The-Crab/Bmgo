@@ -1262,9 +1262,11 @@
 
     .line 10
     .line 11
-    # Install global uncaught exception handler to capture crashes
+    # Install global uncaught exception handler to capture crashes and preserve previous handler
+    invoke-static {}, Ljava/lang/Thread;->getDefaultUncaughtExceptionHandler()Ljava/lang/Thread$UncaughtExceptionHandler;
+    move-result-object v1
     new-instance v0, Lcom/sandboxol/common/base/app/BaseApplication$1;
-    invoke-direct {v0, p0}, Lcom/sandboxol/common/base/app/BaseApplication$1;-><init>(Lcom/sandboxol/common/base/app/BaseApplication;)V
+    invoke-direct {v0, p0, v1}, Lcom/sandboxol/common/base/app/BaseApplication$1;-><init>(Lcom/sandboxol/common/base/app/BaseApplication;Ljava/lang/Thread$UncaughtExceptionHandler;)V
     invoke-static {v0}, Ljava/lang/Thread;->setDefaultUncaughtExceptionHandler(Ljava/lang/Thread$UncaughtExceptionHandler;)V
 
     .line 12
@@ -1293,6 +1295,22 @@
     invoke-virtual {v1}, Ljava/lang/Throwable;->printStackTrace()V
 
     .line 19
+    # Re-install global uncaught exception handler at end of onCreate to ensure our handler wraps any later-installed handlers
+    invoke-static {}, Ljava/lang/Thread;->getDefaultUncaughtExceptionHandler()Ljava/lang/Thread$UncaughtExceptionHandler;
+    move-result-object v0
+    new-instance v1, Lcom/sandboxol/common/base/app/BaseApplication$1;
+    invoke-direct {v1, p0, v0}, Lcom/sandboxol/common/base/app/BaseApplication$1;-><init>(Lcom/sandboxol/common/base/app/BaseApplication;Ljava/lang/Thread$UncaughtExceptionHandler;)V
+    invoke-static {v1}, Ljava/lang/Thread;->setDefaultUncaughtExceptionHandler(Ljava/lang/Thread$UncaughtExceptionHandler;)V
+
+    # Start a background guard thread to monitor and re-wrap the default uncaught exception handler
+    new-instance v2, Lcom/sandboxol/common/base/app/HandlerGuard;
+    invoke-direct {v2, p0}, Lcom/sandboxol/common/base/app/HandlerGuard;-><init>(Lcom/sandboxol/common/base/app/BaseApplication;)V
+    new-instance v3, Ljava/lang/Thread;
+    invoke-direct {v3, v2}, Ljava/lang/Thread;-><init>(Ljava/lang/Runnable;)V
+    const/4 v4, 0x1
+    invoke-virtual {v3, v4}, Ljava/lang/Thread;->setDaemon(Z)V
+    invoke-virtual {v3}, Ljava/lang/Thread;->start()V
+
     :end_label
     return-void
 .end method
